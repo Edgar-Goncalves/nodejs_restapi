@@ -4,51 +4,90 @@ const app= express()
 const morgan= require ('morgan')
 const mysql= require("mysql")
 
-app.use(morgan('short'))
+const bodyParser= require("body-parser")
 
-//json request
-app.get("/user/:id", (req, res)=>{
-  console.log("Fetching user with id:" + req.params.id)
-
-  //db connection
-  const connection= mysql.createConnection({
+//db connection
+function getConnection(){
+  return mysql.createConnection({
     host: "localhost",
     user: "root",
     database: "nodejstest"
   })
-  //query
-  const userId = req.params.id
-  const queryString= "SELECT * FROM users WHERE id= ?"
-  connection.query(queryString, [userId],(err, rows, fields)=>{
-    //error handler
+}
+
+//looking request
+app.use(bodyParser.urlencoded({extended: false}))
+
+app.use(morgan('short'))
+//allow public folder
+app.use(express.static("./public"))
+
+//insert values from user create url
+app.post("/user_create",(req, res)=>{
+  console.log("First Name: "+ req.body.create_first_name)
+  const firstName= req.body.create_first_name
+  const lastName= req.body.create_last_name
+
+  //query to insert user
+  const queryString= "INSERT INTO users (first_name, last_name) VALUES (?,?)"
+  getConnection().query(queryString,[firstName,lastName], (err, results, fields)=>{
     if(err){
-      console.log("Failed users query" + err)
+      console.log("failed to insert new user " + err)
       res.sendStatus(500)
       return
     }
-    else{
-      console.log("user success")
-      //res.json(rows)
+    console.log("Inserted a new user")
+    res.end()
+  })
+  
+})
+
+//json all users request
+app.get("/users", (req, res)=>{
+  //query to all users
+  const queryString= "SELECT * FROM users"
+  getConnection().query(queryString,(err, rows, fields)=>{
+    //error handler
+    if(err){
+      console.log("Failed all users query" + err)
+      res.sendStatus(500)
+      return
     }
 
     const users =rows.map((row)=>{
       return {firstName: row.first_name, lastName: row.last_name}
     })
+
     res.json(users)
+  })
+})
+
+//json user by id request
+app.get("/user/:id", (req, res)=>{
+  //save param id
+  const userId = req.params.id
+  //query to specific user
+  const queryString= "SELECT * FROM users WHERE id= ?"
+  getConnection().query(queryString, [userId],(err, rows, fields)=>{
+    //error handler
+    if(err){
+      console.log("Failed specific user query" + err)
+      res.sendStatus(500)
+      return
+    }
+
+    const user =rows.map((row)=>{
+      return {firstName: row.first_name, lastName: row.last_name}
+    })
+    res.json(user)
  
   })
 })
 
+//root 
 app.get("/", (req, res)=>{
   console.log("responding to root")
   res.send("hello from root")
-})
-
-app.get("/users", (req, res)=>{
-  var user1={firstName:"edgar", lastName:"gonçalves"}
-  const user2={firstName:"leroy", lastName:"jenkins"}
-  res.json ([user1,user2])
-
 })
 
 
