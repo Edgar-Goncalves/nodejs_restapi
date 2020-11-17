@@ -21,7 +21,7 @@ router.get("/messages", (req, res) =>{
 router.get("/users", (req, res)=>{
     //query to all users
     const queryString= "SELECT * FROM users"
-    poolConnection().query(queryString,(err, rows, fields)=>{
+    poolConnection.query(queryString,(err, rows, fields)=>{
         //error handler
         if(err){
             console.log("Failed all users query" + err)
@@ -44,7 +44,7 @@ router.get("/user/:id", (req, res)=>{
     const userId = req.params.id
     //query to specific user
     const queryString= "SELECT * FROM users WHERE id= ?"
-    poolConnection().query(queryString, [userId],(err, rows, fields)=>{
+    poolConnection.query(queryString, [userId],(err, rows, fields)=>{
       //error handler
       if(err){
         console.log("Failed specific user query" + err)
@@ -68,7 +68,7 @@ router.post("/user_create",(req, res)=>{
   
     //query to insert user
     const queryString= "INSERT INTO users (first_name, last_name) VALUES (?,?)"
-    poolConnection().query(queryString,[firstName,lastName], (err, results, fields)=>{
+    poolConnection.query(queryString,[firstName,lastName], (err, results, fields)=>{
       if(err){
         console.log("failed to insert new user " + err)
         res.sendStatus(500)
