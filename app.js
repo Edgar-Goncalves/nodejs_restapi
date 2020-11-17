@@ -23,9 +23,9 @@ app.get("/", (req, res)=>{
   res.send("The root, the root, the root is on fireeeee")
 })
 
-const PROC = process.env.PORT || 5000
+const PROC = process.env.PORT || 3002
 //listening to localhost:PORT
-app.listen(5000,() => {
+app.listen(PORT,() => {
   console.log("server is up on" + PORT)
 })
 
