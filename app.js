@@ -3,95 +3,27 @@ const express = require('express')
 const app= express()
 const morgan= require ('morgan')
 const mysql= require("mysql")
-
 const bodyParser= require("body-parser")
 
-//db connection
-function getConnection(){
-  return mysql.createConnection({
-    host: "localhost",
-    user: "root",
-    database: "nodejstest"
-  })
-}
+//display errors
+app.use(morgan('short'))
 
-//looking request
+//used to read values from user
 app.use(bodyParser.urlencoded({extended: false}))
 
-app.use(morgan('short'))
-//allow public folder
+//allow public folder (front-end)
 app.use(express.static("./public"))
 
-//insert values from user create url
-app.post("/user_create",(req, res)=>{
-  console.log("First Name: "+ req.body.create_first_name)
-  const firstName= req.body.create_first_name
-  const lastName= req.body.create_last_name
-
-  //query to insert user
-  const queryString= "INSERT INTO users (first_name, last_name) VALUES (?,?)"
-  getConnection().query(queryString,[firstName,lastName], (err, results, fields)=>{
-    if(err){
-      console.log("failed to insert new user " + err)
-      res.sendStatus(500)
-      return
-    }
-    console.log("Inserted a new user")
-    res.end()
-  })
-  
-})
-
-//json all users request
-app.get("/users", (req, res)=>{
-  //query to all users
-  const queryString= "SELECT * FROM users"
-  getConnection().query(queryString,(err, rows, fields)=>{
-    //error handler
-    if(err){
-      console.log("Failed all users query" + err)
-      res.sendStatus(500)
-      return
-    }
-
-    const users =rows.map((row)=>{
-      return {firstName: row.first_name, lastName: row.last_name}
-    })
-
-    res.json(users)
-  })
-})
-
-//json user by id request
-app.get("/user/:id", (req, res)=>{
-  //save param id
-  const userId = req.params.id
-  //query to specific user
-  const queryString= "SELECT * FROM users WHERE id= ?"
-  getConnection().query(queryString, [userId],(err, rows, fields)=>{
-    //error handler
-    if(err){
-      console.log("Failed specific user query" + err)
-      res.sendStatus(500)
-      return
-    }
-
-    const user =rows.map((row)=>{
-      return {firstName: row.first_name, lastName: row.last_name}
-    })
-    res.json(user)
- 
-  })
-})
+//routing to user file where all user querys are stored
+const router = require("./routes/user.js")
+app.use(router)
 
 //root 
 app.get("/", (req, res)=>{
-  console.log("responding to root")
-  res.send("hello from root")
+  res.send("The root, the root, the root is on fireeeee")
 })
 
-
-//localhost:3003
+//listening to localhost:3002
 app.listen(3002,() => {
   console.log("server is up on 3002")
 })
